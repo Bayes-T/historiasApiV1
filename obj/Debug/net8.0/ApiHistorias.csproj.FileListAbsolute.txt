@@ -152,3 +152,4 @@
 /Users/nicolassabogal/RiderProjects/ApiHistorias/ApiHistorias/bin/Debug/net8.0/Microsoft.AspNetCore.JsonPatch.dll
 /Users/nicolassabogal/RiderProjects/ApiHistorias/ApiHistorias/bin/Debug/net8.0/Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
 /Users/nicolassabogal/RiderProjects/ApiHistorias/ApiHistorias/bin/Debug/net8.0/Newtonsoft.Json.Bson.dll
+/Users/nicolassabogal/RiderProjects/ApiHistorias/ApiHistorias/obj/Debug/net8.0/ApiHistorias.sourcelink.json

@@ -4,7 +4,7 @@ namespace ApiHistorias.DTOs;
 
 public class HistoriaDTO
 {
-    public int Id { get; set; }
+    public int? Id { get; set; }
     public DateTime? Fecha { get; set; }
     public string? Nota { get; set; }
     

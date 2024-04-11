@@ -48,7 +48,7 @@ public class HistoriaController: ControllerBase
     }
     
     //Si quiero el id o el nombre del paciente, crear un DTO que contenga esas propiedades y no las propiedades de navegación! 
-    //En este caso tomaremos el paciente y el profesional de las url en arngular
+    //En este caso tomaremos el paciente y el profesional de las url en angular
     [HttpGet("listado")]
     public async Task<ActionResult<List<HistoriaDTO>>> Get()
     {
@@ -66,20 +66,13 @@ public class HistoriaController: ControllerBase
                 Nota = historia.Nota,
             };
             
-            var profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => historia.Profesional != null && x.Id == historia.Profesional.Id);
-            
-            historiaDto.Profesional = profesional;
-            
-            var paciente = await _dbContext.Pacientes.FirstOrDefaultAsync(x => historia.Paciente != null && x.Id == historia.Paciente.Id);
-            historiaDto.Paciente = paciente;
-            
             historiasDtos.Add(historiaDto);
         }
 
         return historiasDtos;
     }
     
-    [HttpGet("detalle/{id:int}")]
+    [HttpGet("detalleCompleto/{id:int}")]
     public async Task<ActionResult<HistoriaDTO>> GetByIdCompleto(int id)
     {
         var historia = await _dbContext.Historias.Include(x => x.Profesional).Include(x => x.Paciente).FirstOrDefaultAsync(x => x.Id == id);
@@ -93,8 +86,7 @@ public class HistoriaController: ControllerBase
         {
             Id = historia.Id,
             Fecha = historia.Fecha,
-            Nota = historia.Nota,
-
+            Nota = historia.Nota
         };
         
         var profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => historia.Profesional != null && x.Id == historia.Profesional.Id);
@@ -107,7 +99,7 @@ public class HistoriaController: ControllerBase
         return historiaDto;
     }
     
-    [HttpGet("detalleCompleto/{id:int}")]
+    [HttpGet("detalle/{id:int}")]
     public async Task<ActionResult<HistoriaDTO>> GetById(int id)
     {
         var historia = await _dbContext.Historias.FirstOrDefaultAsync(x => x.Id == id);
@@ -125,13 +117,6 @@ public class HistoriaController: ControllerBase
 
         };
         
-        var profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => historia.Profesional != null && x.Id == historia.Profesional.Id);
-        historia.Profesional = profesional;
-        historiaDto.Profesional = profesional;
-
-        var paciente = await _dbContext.Pacientes.FirstOrDefaultAsync(x => historia.Paciente != null && x.Id == historia.Paciente.Id);
-        historiaDto.Paciente = paciente;
-
         return historiaDto;
     }
     
@@ -149,7 +134,6 @@ public class HistoriaController: ControllerBase
         
         var historia = new Historia()
         {
-            Id = postHistoriaDto.Id,
             Fecha = postHistoriaDto.Fecha,
             Nota = postHistoriaDto.Nota
         };
@@ -166,7 +150,7 @@ public class HistoriaController: ControllerBase
     }
     
     [HttpPatch("editar/{id:int}")]
-    public async Task<ActionResult> Patch(postHistoriaDTO postHistoriaDto, int id, int pacienteId)
+    public async Task<ActionResult> Patch(postHistoriaDTO postHistoriaDto, int id, int pacienteId, int profesionalId)
     {
         //verificar si ya existe una nota con el mismo ID
         var existe = await _dbContext.Historias.AnyAsync(x => x.Id == id);
@@ -175,16 +159,19 @@ public class HistoriaController: ControllerBase
         {
             return BadRequest("Id de la historia no encontrado");
         }
-        
+            
         var historia = new Historia()
         {
-            Id = postHistoriaDto.Id,
+            Id = id,
             Fecha = postHistoriaDto.Fecha,
-            Nota = postHistoriaDto.Nota
+            Nota = postHistoriaDto.Nota,
         };
 
         var paciente = await _dbContext.Pacientes.FirstOrDefaultAsync(x => x.Id == pacienteId);
         historia.Paciente = paciente;
+
+        var profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => x.Id == profesionalId);
+        historia.Profesional = profesional;
         
         _dbContext.Update(historia);
         await _dbContext.SaveChangesAsync();
