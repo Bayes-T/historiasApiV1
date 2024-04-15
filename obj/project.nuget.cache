@@ -1,13 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "N4hZkXsUrmIl2+6rjB2aHD0zME7PxtrxBf1rh4JizAJ0NDRvbD7N3LnfvF5GGKWXQxzvJUZkZlLR4zYagImAdg==",
+  "dgSpecHash": "Zbz3ts+705f+QVTkpJ7HHcTQ7uZfTI7uqXjSMU9/DXCYodiLpK7MiyoOICx6FelP30oFpedQJ/6KSW+OQ9LMog==",
   "success": true,
   "projectFilePath": "/Users/nicolassabogal/RiderProjects/ApiHistorias/ApiHistorias/ApiHistorias.csproj",
   "expectedPackageFiles": [
     "/Users/nicolassabogal/.nuget/packages/azure.core/1.35.0/azure.core.1.35.0.nupkg.sha512",
     "/Users/nicolassabogal/.nuget/packages/azure.identity/1.10.3/azure.identity.1.10.3.nupkg.sha512",
     "/Users/nicolassabogal/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
-    "/Users/nicolassabogal/.nuget/packages/microsoft.aspnetcore.jsonpatch/8.0.0/microsoft.aspnetcore.jsonpatch.8.0.0.nupkg.sha512",
+    "/Users/nicolassabogal/.nuget/packages/microsoft.aspnetcore.jsonpatch/8.0.4/microsoft.aspnetcore.jsonpatch.8.0.4.nupkg.sha512",
     "/Users/nicolassabogal/.nuget/packages/microsoft.aspnetcore.mvc.newtonsoftjson/8.0.0/microsoft.aspnetcore.mvc.newtonsoftjson.8.0.0.nupkg.sha512",
     "/Users/nicolassabogal/.nuget/packages/microsoft.aspnetcore.openapi/8.0.1/microsoft.aspnetcore.openapi.8.0.1.nupkg.sha512",
     "/Users/nicolassabogal/.nuget/packages/microsoft.bcl.asyncinterfaces/7.0.0/microsoft.bcl.asyncinterfaces.7.0.0.nupkg.sha512",

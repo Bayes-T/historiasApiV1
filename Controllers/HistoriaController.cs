@@ -1,5 +1,6 @@
 using ApiHistorias.DTOs;
 using ApiHistorias.Entities;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -149,30 +150,47 @@ public class HistoriaController: ControllerBase
         return Ok();
     }
     
-    [HttpPatch("editar/{id:int}")]
-    public async Task<ActionResult> Patch(postHistoriaDTO postHistoriaDto, int id, int pacienteId, int profesionalId)
+    [HttpPatch("{id}")]
+    public async Task<ActionResult> PatchProduct(int id, [FromBody] JsonPatchDocument<Historia>? patchDoc)
     {
-        //verificar si ya existe una nota con el mismo ID
-        var existe = await _dbContext.Historias.AnyAsync(x => x.Id == id);
-
-        if (!existe)
+        if (patchDoc == null)
         {
-            return BadRequest("Id de la historia no encontrado");
+            return BadRequest();
         }
-            
-        var historia = new Historia()
+
+        var historia = await _dbContext.Historias.FirstOrDefaultAsync(x => x.Id == id);
+
+        patchDoc.ApplyTo(historia, ModelState);
+
+        if (!TryValidateModel(historia))
         {
-            Id = id,
-            Fecha = postHistoriaDto.Fecha,
-            Nota = postHistoriaDto.Nota,
+            return BadRequest(ModelState);
+        }
+        _dbContext.Update(historia);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+    }
+    
+    
+    [HttpPut("editar/{id:int}")]
+    public async Task<ActionResult> PatchNombre(int id, HistoriaDTO historiaDto)
+    {
+        var historiaExiste = await _dbContext.Historias.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (historiaExiste == null)
+        {
+            return BadRequest("Id del paciente no encontrado");
+        }
+
+        var historia = new HistoriaDTO()
+        {
+            Id = historiaDto.Id,
+            Fecha = historiaDto.Fecha,
+            Nota = historiaDto.Nota,
+            Paciente = historiaDto.Paciente,
+            Profesional = historiaDto.Profesional
         };
 
-        var paciente = await _dbContext.Pacientes.FirstOrDefaultAsync(x => x.Id == pacienteId);
-        historia.Paciente = paciente;
-
-        var profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => x.Id == profesionalId);
-        historia.Profesional = profesional;
-        
         _dbContext.Update(historia);
         await _dbContext.SaveChangesAsync();
         return Ok();
