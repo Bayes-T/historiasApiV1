@@ -205,6 +205,11 @@ public class PacienteController : ControllerBase
         }
 
         var paciente = await _dbContext.Pacientes.FirstOrDefaultAsync(x => x.Id == id);
+        
+        if (paciente == null)
+        {
+            return BadRequest("Id del paciente no encontrado");
+        }
 
         patchDoc!.ApplyTo(paciente, ModelState);
 
@@ -229,7 +234,7 @@ public class PacienteController : ControllerBase
             return BadRequest("Id del paciente no encontrado");
         }
 
-        var paciente = new PacienteDTO()
+        var paciente = new Paciente()
         {
             Id = pacienteDto.Id,
             Nombre = pacienteDto.Nombre,

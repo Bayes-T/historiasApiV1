@@ -6,7 +6,6 @@ public class Historia
 {
     [Required]
     public int Id { get; set; }
-
     [Required] 
     public DateTime? Fecha { get; set; } = DateTime.Now;
     [Required]

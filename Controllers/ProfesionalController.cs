@@ -2,6 +2,7 @@ using ApiHistorias.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiHistorias.Entities;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace ApiHistorias.Controllers;
 
@@ -108,29 +109,57 @@ public class ProfesionalController: ControllerBase
         await _dbContext.SaveChangesAsync();
         return Ok();
     }
-
-    [HttpPatch("editarProfesional/{id:int}")]
-    public async Task<ActionResult> patch(postProfesionalDTO postProfesionalDto, int id)
+    
+    [HttpPatch("{id}")]
+    public async Task<ActionResult> PatchProduct(int id, [FromBody] JsonPatchDocument<Profesional>? patchDoc)
     {
-        var existeProfesional = await _dbContext.Profesionales.AnyAsync(x => x.Id == id);
-        
-        if (!existeProfesional)
+        if (patchDoc == null)
         {
-            return BadRequest("No existe un profesional con este Id");
+            return BadRequest();
+        }
+
+        var profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (profesional == null)
+        {
+            return BadRequest("Id del paciente no encontrado");
+        }
+        
+        patchDoc.ApplyTo(profesional, ModelState);
+
+        if (!TryValidateModel(profesional))
+        {
+            return BadRequest(ModelState);
+        }
+        _dbContext.Update(profesional);
+        await _dbContext.SaveChangesAsync();
+        return Ok();
+    }
+    
+    
+    [HttpPut("editar/{id:int}")]
+    public async Task<ActionResult> PatchNombre(int id, ProfesionalDTO historiaDto)
+    {
+        var profesionalExiste = await _dbContext.Profesionales.FirstOrDefaultAsync(x => x.Id == id);
+
+        if (profesionalExiste == null)
+        {
+            return BadRequest("Id del paciente no encontrado");
         }
 
         var profesional = new Profesional()
         {
-            Id = postProfesionalDto.Id,
-            Nombre = postProfesionalDto.Nombre,
-            Cargo = postProfesionalDto.Cargo,
-            Permisos = postProfesionalDto.Permisos
+            Id = historiaDto.Id,
+            Nombre = historiaDto.Nombre,
+            Cargo = historiaDto.Cargo,
+            Permisos = historiaDto.Permisos,
         };
 
         _dbContext.Update(profesional);
-        _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync();
         return Ok();
     }
+
 
     [HttpDelete("borrarProfesional/{id:int}")]
     public async Task<ActionResult> removeById(int id)
@@ -145,7 +174,7 @@ public class ProfesionalController: ControllerBase
         var profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => x.Id == id);
 
         _dbContext.Remove(profesional);
-        _dbContext.SaveChangesAsync();
+        await _dbContext.SaveChangesAsync();
         return Ok();
     }
 

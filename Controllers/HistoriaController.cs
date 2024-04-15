@@ -1,5 +1,7 @@
 using ApiHistorias.DTOs;
 using ApiHistorias.Entities;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +20,7 @@ public class HistoriaController: ControllerBase
     }
 
     //listado completo, incluye la totalidad de las propiedades de navegación DTO Paciente y del DTO Profesional, si quiero solo el dto sin las nav props, crear un endpoint sin includes
+    [Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("listadoCompleto")]
     public async Task<ActionResult<List<HistoriaDTO>>> GetAll()
     {
@@ -49,7 +52,7 @@ public class HistoriaController: ControllerBase
     }
     
     //Si quiero el id o el nombre del paciente, crear un DTO que contenga esas propiedades y no las propiedades de navegación! 
-    //En este caso tomaremos el paciente y el profesional de las url en angular
+    //En este proyecto tomaremos el paciente y el profesional de las url en angular
     [HttpGet("listado")]
     public async Task<ActionResult<List<HistoriaDTO>>> Get()
     {
@@ -150,6 +153,8 @@ public class HistoriaController: ControllerBase
         return Ok();
     }
     
+   
+    
     [HttpPatch("{id}")]
     public async Task<ActionResult> PatchProduct(int id, [FromBody] JsonPatchDocument<Historia>? patchDoc)
     {
@@ -159,6 +164,11 @@ public class HistoriaController: ControllerBase
         }
 
         var historia = await _dbContext.Historias.FirstOrDefaultAsync(x => x.Id == id);
+        
+        if (historia == null)
+        {
+            return BadRequest("Id del paciente no encontrado");
+        }
 
         patchDoc.ApplyTo(historia, ModelState);
 
@@ -182,7 +192,7 @@ public class HistoriaController: ControllerBase
             return BadRequest("Id del paciente no encontrado");
         }
 
-        var historia = new HistoriaDTO()
+        var historia = new Historia()
         {
             Id = historiaDto.Id,
             Fecha = historiaDto.Fecha,
