@@ -18,9 +18,7 @@ public class HistoriaController: ControllerBase
     {
         _dbContext = dbContext;
     }
-
-    //listado completo, incluye la totalidad de las propiedades de navegación DTO Paciente y del DTO Profesional, si quiero solo el dto sin las nav props, crear un endpoint sin includes
-    [Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    
     [HttpGet("listadoCompleto")]
     public async Task<ActionResult<List<HistoriaDTO>>> GetAll()
     {
