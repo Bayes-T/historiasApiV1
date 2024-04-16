@@ -19,6 +19,7 @@ public class HistoriaController: ControllerBase
         _dbContext = dbContext;
     }
     
+    [Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("listadoCompleto")]
     public async Task<ActionResult<List<HistoriaDTO>>> GetAll()
     {
