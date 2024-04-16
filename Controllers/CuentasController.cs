@@ -14,16 +14,18 @@ public class CuentasController: ControllerBase
 {
     private readonly IConfiguration _configuration;
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly SignInManager<IdentityUser> _signInManager;
 
-    public CuentasController(IConfiguration configuration, UserManager<IdentityUser> userManager)
+    public CuentasController(IConfiguration configuration, UserManager<IdentityUser> userManager,  SignInManager<IdentityUser> signInManager)
     {
         _configuration = configuration;
         _userManager = userManager;
+        _signInManager = signInManager;
     }
     
     [HttpPost]
     [Route("/registrar")]
-    public async Task<ActionResult<RespuestaAutenticacion>> registrar(CredencialesUsuario credencialesUsuario)
+    public async Task<ActionResult<RespuestaAutenticacion>> Registrar(CredencialesUsuario credencialesUsuario)
     {
         var usuario = new IdentityUser() { UserName = credencialesUsuario.Email, Email = credencialesUsuario.Email };
 
@@ -31,15 +33,31 @@ public class CuentasController: ControllerBase
 
         if (resultado.Succeeded)
         {
-            return construirToken(credencialesUsuario);
+            return ConstruirToken(credencialesUsuario);
         }
         else
         {
             return BadRequest(resultado.Errors);
         }
     }
+    
+    [HttpPost("login")]
+    public async Task<ActionResult<RespuestaAutenticacion>> Login(CredencialesUsuario credencialesUsuario)
+    {
+        var resultado =
+            await _signInManager.PasswordSignInAsync(credencialesUsuario.Email, credencialesUsuario.Password, isPersistent:false, lockoutOnFailure:false);
 
-    private RespuestaAutenticacion construirToken(CredencialesUsuario credencialesUsuario)
+        if (resultado.Succeeded)
+        {
+            return ConstruirToken(credencialesUsuario);
+        }
+        else
+        {
+            return BadRequest("Login incorrecto");
+        }
+    }
+
+    private RespuestaAutenticacion ConstruirToken(CredencialesUsuario credencialesUsuario)
     {
         var claims = new List<Claim>()
         {
