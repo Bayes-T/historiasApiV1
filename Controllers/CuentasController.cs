@@ -2,6 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using ApiHistorias.DTOs;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -33,7 +35,7 @@ public class CuentasController: ControllerBase
 
         if (resultado.Succeeded)
         {
-            return ConstruirToken(credencialesUsuario);
+            return await ConstruirToken(credencialesUsuario);
         }
         else
         {
@@ -49,21 +51,59 @@ public class CuentasController: ControllerBase
 
         if (resultado.Succeeded)
         {
-            return ConstruirToken(credencialesUsuario);
+            return await ConstruirToken(credencialesUsuario);
         }
         else
         {
             return BadRequest("Login incorrecto");
         }
     }
+    
+    
+    [Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "Admin")]
+    [HttpPost("HacerAdmin")]
+    public async Task<ActionResult> hacerAdmin(EditarAdminDTO editarAdminDto)
+    {
+        var usuario = await _userManager.FindByEmailAsync(editarAdminDto.Email);
+        await _userManager.AddClaimAsync(usuario, new Claim("isAdmin", "1"));
 
-    private RespuestaAutenticacion ConstruirToken(CredencialesUsuario credencialesUsuario)
+        return NoContent();
+    }
+    
+    [HttpPost("RemoverAdmin")]
+    [Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "Admin")]
+    public async Task<ActionResult> removerAdmin(EditarAdminDTO editarAdminDto)
+    {
+        var usuario = await _userManager.FindByEmailAsync(editarAdminDto.Email);
+        await _userManager.RemoveClaimAsync(usuario, new Claim("isAdmin", "1"));
+
+        return NoContent();
+    }
+    
+    [HttpGet("RenovarToken")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<RespuestaAutenticacion> RenovarToken()
+    {
+        var emailClaim = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "email");
+        var email = emailClaim.Value;
+        var credencialesUsuario = new CredencialesUsuario()
+        {
+            Email = email
+        };
+
+        return await ConstruirToken(credencialesUsuario);
+    }
+
+    private async Task<RespuestaAutenticacion> ConstruirToken(CredencialesUsuario credencialesUsuario)
     {
         var claims = new List<Claim>()
         {
             new Claim("email", credencialesUsuario.Email)
         };
-
+        
+        var usuario = await _userManager.FindByEmailAsync(credencialesUsuario.Email);
+        var claimsDB = await _userManager.GetClaimsAsync(usuario);
+        claims.AddRange(claimsDB);
         var llave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWTSign"]));
         
         var creds = new SigningCredentials(llave, SecurityAlgorithms.HmacSha256);
@@ -78,4 +118,5 @@ public class CuentasController: ControllerBase
             Expiration = expiracion
         };
     }
+    
 }

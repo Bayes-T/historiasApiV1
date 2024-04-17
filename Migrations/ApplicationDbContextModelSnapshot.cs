@@ -44,9 +44,11 @@ namespace ApiHistorias.Migrations
                     b.Property<int?>("ProfesionalId")
                         .HasColumnType("int");
 
-                    b.Property<string>("usuarioId")
-                        .IsRequired()
+                    b.Property<string>("UsuarioId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("usuarioId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -54,7 +56,7 @@ namespace ApiHistorias.Migrations
 
                     b.HasIndex("ProfesionalId");
 
-                    b.HasIndex("usuarioId");
+                    b.HasIndex("UsuarioId");
 
                     b.ToTable("Historias");
                 });
@@ -334,9 +336,7 @@ namespace ApiHistorias.Migrations
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Usuario")
                         .WithMany()
-                        .HasForeignKey("usuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UsuarioId");
 
                     b.Navigation("Paciente");
 

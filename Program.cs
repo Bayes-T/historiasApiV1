@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json.Serialization;
 using ApiHistorias;
@@ -47,15 +48,28 @@ builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
 var connectionString = builder.Configuration.GetConnectionString("defaultConnection");
 var JWKey = builder.Configuration["JWTSign"];
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters
+
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
-    ValidateIssuer = false,
-    ValidateAudience = false,
-    ValidateLifetime = true,
-    ValidateIssuerSigningKey = true,
-    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JWKey)),
-    ClockSkew = TimeSpan.Zero
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JWKey)),
+        ClockSkew = TimeSpan.Zero
+    };
+    
+    options.MapInboundClaims = false;
 });
+
+builder.Services.AddAuthorization(opciones =>
+{
+    opciones.AddPolicy("isAdmin", policy => policy.RequireClaim("Admin"));
+});
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 

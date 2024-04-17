@@ -2,12 +2,15 @@ using ApiHistorias.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiHistorias.Entities;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace ApiHistorias.Controllers;
 
 [ApiController]
 [Route("api/profesionales")]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class ProfesionalController: ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;

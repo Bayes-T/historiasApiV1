@@ -1,5 +1,7 @@
 using ApiHistorias.DTOs;
 using ApiHistorias.Entities;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +10,7 @@ namespace ApiHistorias.Controllers;
 
 [ApiController]
 [Route("api/paciente")]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class PacienteController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;

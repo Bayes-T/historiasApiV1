@@ -2,6 +2,7 @@ using ApiHistorias.DTOs;
 using ApiHistorias.Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,20 +11,23 @@ namespace ApiHistorias.Controllers;
 
 [ApiController]
 [Route("api/historia")]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class HistoriaController: ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
+    private readonly UserManager<IdentityUser> _userManager;
 
-    public HistoriaController(ApplicationDbContext dbContext)
+    public HistoriaController(ApplicationDbContext dbContext, UserManager<IdentityUser> userManager)
     {
         _dbContext = dbContext;
+        _userManager = userManager;
+        
     }
+
     
-    [Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [HttpGet("listadoCompleto")]
     public async Task<ActionResult<List<HistoriaDTO>>> GetAll()
     {
-        // return await _dbContext.Historias.ToListAsync();
 
         var historias = await _dbContext.Historias.Include(x => x.Profesional).Include(x => x.Paciente).ToListAsync();
         var historiasDtos = new List<HistoriaDTO>() { };
@@ -126,28 +130,41 @@ public class HistoriaController: ControllerBase
     [HttpPost("agregar")]
     public async Task<ActionResult> Post(postHistoriaDTO postHistoriaDto)
     {
+        var emailClaim = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "email");
+        //Estoy obteniendo un null aqui!! verificar los nombres que puse a ver si hay algun error
+        if (emailClaim == null)
+        {
+            Console.WriteLine(emailClaim);
+        }
+
+        var email = emailClaim.Value;
+        var usuario = await _userManager.FindByEmailAsync(email); 
+        var usuarioId = usuario.Id;
 
         var existeHistoria = await _dbContext.Historias.AnyAsync(x => x.Id == postHistoriaDto.Id);
 
-        //Eliminar este error al agregar la posibilidad de que un paciente pueda ser atendido por más de un profesional
-        if (existeHistoria)
-        {
-            return BadRequest("Ya existe una historia con este Id");
-        }
+            //Eliminar este error al agregar la posibilidad de que un paciente pueda ser atendido por más de un profesional
+            if (existeHistoria)
+            {
+                return BadRequest("Ya existe una historia con este Id");
+            }
         
-        var historia = new Historia()
-        {
-            Fecha = postHistoriaDto.Fecha,
-            Nota = postHistoriaDto.Nota
-        };
+            var historia = new Historia()
+            {
+                Fecha = postHistoriaDto.Fecha,
+                Nota = postHistoriaDto.Nota
+            };
 
-        var paciente = await _dbContext.Pacientes.FirstOrDefaultAsync(x => x.Id == postHistoriaDto.pacienteId);
-        historia.Paciente = paciente;
+            var paciente = await _dbContext.Pacientes.FirstOrDefaultAsync(x => x.Id == postHistoriaDto.pacienteId);
+            historia.Paciente = paciente;
 
-        var profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => x.Id == postHistoriaDto.profesionalId);
-        historia.Profesional = profesional;
+            var profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => x.Id == postHistoriaDto.profesionalId);
+            historia.Profesional = profesional;
+            historia.usuarioId = usuarioId;
         
-        _dbContext.Add(historia);
+            _dbContext.Add(historia);
+        
+
         await _dbContext.SaveChangesAsync();
         return Ok();
     }
