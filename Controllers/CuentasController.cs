@@ -29,7 +29,7 @@ public class CuentasController: ControllerBase
     [Route("/registrar")]
     public async Task<ActionResult<RespuestaAutenticacion>> Registrar(CredencialesUsuario credencialesUsuario)
     {
-        var usuario = new IdentityUser() { UserName = credencialesUsuario.Email, Email = credencialesUsuario.Email };
+        var usuario = new IdentityUser() { UserName = credencialesUsuario.Name, Email = credencialesUsuario.Email };
 
         var resultado = await _userManager.CreateAsync(usuario, credencialesUsuario.Password);
 

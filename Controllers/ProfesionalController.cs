@@ -10,7 +10,6 @@ namespace ApiHistorias.Controllers;
 
 [ApiController]
 [Route("api/profesionales")]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class ProfesionalController: ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
@@ -88,11 +87,10 @@ public class ProfesionalController: ControllerBase
 
         return profesionalDTO;
     }
-
+    
     [HttpPost("agregarProfesional")]
     public async Task<ActionResult> post(postProfesionalDTO postProfesional)
     {
-
         var existeProfesional = await _dbContext.Profesionales.AnyAsync(x => x.Id == postProfesional.Id);
 
         if (existeProfesional)
@@ -107,10 +105,18 @@ public class ProfesionalController: ControllerBase
             Cargo = postProfesional.Cargo,
             Permisos = postProfesional.Permisos
         };
-
+        
+        var resultado = new List<ProfesionalPaciente>();
+        foreach (var pacienteId in postProfesional.PacientesId)
+        {
+            resultado.Add(new ProfesionalPaciente() {PacienteId = pacienteId, ProfesionalId = profesional.Id});
+        }
+        
+        profesional.ProfesionalesPacientes = resultado;
+        
         _dbContext.Add(profesional);
         await _dbContext.SaveChangesAsync();
-        return Ok();
+        return Ok(resultado);
     }
     
     [HttpPatch("{id}")]

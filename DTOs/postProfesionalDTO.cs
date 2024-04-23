@@ -6,4 +6,6 @@ public class postProfesionalDTO
     public string? Nombre { get; set; }
     public string? Cargo { get; set; }
     public int? Permisos { get; set; } = 1;
+    
+    public List<int> PacientesId { get; set; }
 }

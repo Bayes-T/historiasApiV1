@@ -10,7 +10,6 @@ public class PacienteDTO
     public string? DNI { get; set; }
     public string? OSocial { get; set; }
     
-    public Profesional? Profesional { get; set; }
+    public List<Profesional>? Profesionales { get; set; }
     public List<Historia>? Historias { get; set; }
-    
 }

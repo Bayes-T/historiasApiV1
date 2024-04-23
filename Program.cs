@@ -46,6 +46,10 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.User.AllowedUserNameCharacters = null;
+});
 var connectionString = builder.Configuration.GetConnectionString("defaultConnection");
 var JWKey = builder.Configuration["JWTSign"];
 

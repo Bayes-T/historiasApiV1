@@ -131,7 +131,6 @@ public class HistoriaController: ControllerBase
     public async Task<ActionResult> Post(postHistoriaDTO postHistoriaDto)
     {
         var emailClaim = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "email");
-        //Estoy obteniendo un null aqui!! verificar los nombres que puse a ver si hay algun error
         if (emailClaim == null)
         {
             Console.WriteLine(emailClaim);
@@ -160,7 +159,7 @@ public class HistoriaController: ControllerBase
 
             var profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => x.Id == postHistoriaDto.profesionalId);
             historia.Profesional = profesional;
-            historia.usuarioId = usuarioId;
+            // historia.UsuarioId = usuarioId;
         
             _dbContext.Add(historia);
         

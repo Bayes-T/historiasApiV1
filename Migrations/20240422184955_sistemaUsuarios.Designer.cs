@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApiHistorias.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240416143021_userrelation2")]
-    partial class userrelation2
+    [Migration("20240422184955_sistemaUsuarios")]
+    partial class sistemaUsuarios
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -47,8 +47,7 @@ namespace ApiHistorias.Migrations
                     b.Property<int?>("ProfesionalId")
                         .HasColumnType("int");
 
-                    b.Property<string>("usuarioId")
-                        .IsRequired()
+                    b.Property<string>("UsuarioId")
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -57,7 +56,7 @@ namespace ApiHistorias.Migrations
 
                     b.HasIndex("ProfesionalId");
 
-                    b.HasIndex("usuarioId");
+                    b.HasIndex("UsuarioId");
 
                     b.ToTable("Historias");
                 });
@@ -85,18 +84,7 @@ namespace ApiHistorias.Migrations
                         .HasMaxLength(25)
                         .HasColumnType("nvarchar(25)");
 
-                    b.Property<int?>("ProfesionalId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UsuarioId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("ProfesionalId");
-
-                    b.HasIndex("UsuarioId");
 
                     b.ToTable("Pacientes");
                 });
@@ -125,6 +113,21 @@ namespace ApiHistorias.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Profesionales");
+                });
+
+            modelBuilder.Entity("ApiHistorias.Entities.ProfesionalPaciente", b =>
+                {
+                    b.Property<int>("ProfesionalId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PacienteId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProfesionalId", "PacienteId");
+
+                    b.HasIndex("PacienteId");
+
+                    b.ToTable("ProfesionalesPacientes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -325,6 +328,21 @@ namespace ApiHistorias.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("PacienteProfesional", b =>
+                {
+                    b.Property<int>("PacientesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProfesionalesId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PacientesId", "ProfesionalesId");
+
+                    b.HasIndex("ProfesionalesId");
+
+                    b.ToTable("PacienteProfesional");
+                });
+
             modelBuilder.Entity("ApiHistorias.Entities.Historia", b =>
                 {
                     b.HasOne("ApiHistorias.Entities.Paciente", "Paciente")
@@ -335,34 +353,34 @@ namespace ApiHistorias.Migrations
                         .WithMany("Historias")
                         .HasForeignKey("ProfesionalId");
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Usuario")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "usuario")
                         .WithMany()
-                        .HasForeignKey("usuarioId")
+                        .HasForeignKey("UsuarioId");
+
+                    b.Navigation("Paciente");
+
+                    b.Navigation("Profesional");
+
+                    b.Navigation("usuario");
+                });
+
+            modelBuilder.Entity("ApiHistorias.Entities.ProfesionalPaciente", b =>
+                {
+                    b.HasOne("ApiHistorias.Entities.Paciente", "Paciente")
+                        .WithMany("ProfesionalesPacientes")
+                        .HasForeignKey("PacienteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ApiHistorias.Entities.Profesional", "Profesional")
+                        .WithMany("ProfesionalesPacientes")
+                        .HasForeignKey("ProfesionalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Paciente");
 
                     b.Navigation("Profesional");
-
-                    b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("ApiHistorias.Entities.Paciente", b =>
-                {
-                    b.HasOne("ApiHistorias.Entities.Profesional", "Profesional")
-                        .WithMany("Pacientes")
-                        .HasForeignKey("ProfesionalId");
-
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Profesional");
-
-                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -416,16 +434,33 @@ namespace ApiHistorias.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("PacienteProfesional", b =>
+                {
+                    b.HasOne("ApiHistorias.Entities.Paciente", null)
+                        .WithMany()
+                        .HasForeignKey("PacientesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ApiHistorias.Entities.Profesional", null)
+                        .WithMany()
+                        .HasForeignKey("ProfesionalesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("ApiHistorias.Entities.Paciente", b =>
                 {
                     b.Navigation("Historias");
+
+                    b.Navigation("ProfesionalesPacientes");
                 });
 
             modelBuilder.Entity("ApiHistorias.Entities.Profesional", b =>
                 {
                     b.Navigation("Historias");
 
-                    b.Navigation("Pacientes");
+                    b.Navigation("ProfesionalesPacientes");
                 });
 #pragma warning restore 612, 618
         }

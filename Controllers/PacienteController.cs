@@ -23,7 +23,7 @@ public class PacienteController : ControllerBase
     [HttpGet("listadoCompleto")]
     public async Task<ActionResult<List<PacienteDTO>>> GetCompleto()
     {
-        var pacientes = await _dbContext.Pacientes.Include(x => x.Profesional).ToListAsync();
+        var pacientes = await _dbContext.Pacientes.Include(x => x.Profesionales).ToListAsync();
 
         var pacientesDTO = new List<PacienteDTO>() { };
 
@@ -36,11 +36,6 @@ public class PacienteController : ControllerBase
                 DNI = paciente.DNI,
                 OSocial = paciente.OSocial,
             };
-
-            var profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x =>
-                paciente.Profesional != null && x.Id == paciente.Profesional.Id);
-
-            pacienteDTO.Profesional = profesional;
 
             var historias = await _dbContext.Historias.Where(x => x.Id == paciente.Id).ToListAsync();
 
@@ -111,8 +106,7 @@ public class PacienteController : ControllerBase
     [HttpGet("detalleCompleto/{id:int}")]
     public async Task<ActionResult<PacienteDTO>> GetByIdCompleto(int id)
     {
-        var paciente = await _dbContext.Pacientes.Include(x => x.Profesional).Include(x => x.Historias)
-            .FirstOrDefaultAsync(x => x.Id == id);
+        var paciente = await _dbContext.Pacientes.Include(x => x.Profesionales).Include(x => x.Historias).FirstOrDefaultAsync(x => x.Id == id);
 
         if (paciente == null)
         {
@@ -127,12 +121,7 @@ public class PacienteController : ControllerBase
             OSocial = paciente.OSocial,
 
         };
-
-        var profesional =
-            await _dbContext.Profesionales.FirstOrDefaultAsync(x =>
-                paciente.Profesional != null && x.Id == paciente.Profesional.Id);
-
-        pacienteDTO.Profesional = profesional;
+        
 
         var historias = await _dbContext.Historias.Where(x => x.Id == id).ToListAsync();
 
@@ -144,7 +133,8 @@ public class PacienteController : ControllerBase
     [HttpGet("detalle/{id:int}")]
     public async Task<ActionResult<PacienteDTO>> GetById(int id)
     {
-        var paciente = await _dbContext.Pacientes.FirstOrDefaultAsync(x => x.Id == id);
+
+        var paciente = await _dbContext.Pacientes.Include(x => x.Profesionales).FirstOrDefaultAsync(x => x.Id == id);
 
         if (paciente == null)
         {
@@ -159,12 +149,6 @@ public class PacienteController : ControllerBase
             OSocial = paciente.OSocial,
 
         };
-
-        var profesional =
-            await _dbContext.Profesionales.FirstOrDefaultAsync(x =>
-                paciente.Profesional != null && x.Id == paciente.Profesional.Id);
-
-        pacienteDTO.Profesional = profesional;
 
         return pacienteDTO;
     }
@@ -187,13 +171,7 @@ public class PacienteController : ControllerBase
             DNI = postPacienteDto.DNI,
             OSocial = postPacienteDto.OSocial,
         };
-
-        //automatizar el profesional
-        var profesional =
-            await _dbContext.Profesionales.FirstOrDefaultAsync(x => x.Id == postPacienteDto.profesionalId);
-        paciente.Profesional = profesional;
-
-
+        
         _dbContext.Add(paciente);
         await _dbContext.SaveChangesAsync();
         return Ok();
@@ -229,8 +207,7 @@ public class PacienteController : ControllerBase
     [HttpPut("editar/{id:int}")]
     public async Task<ActionResult> PatchNombre(int id, PacienteDTO pacienteDto)
     {
-        var pacienteExiste = await _dbContext.Pacientes.Include(paciente => paciente.Profesional)
-            .FirstOrDefaultAsync(x => x.Id == id);
+        var pacienteExiste = await _dbContext.Pacientes.FirstOrDefaultAsync(x => x.Id == id);
 
         if (pacienteExiste == null)
         {
@@ -243,7 +220,6 @@ public class PacienteController : ControllerBase
             Nombre = pacienteDto.Nombre,
             DNI = pacienteDto.DNI,
             OSocial = pacienteDto.OSocial,
-            Profesional = pacienteDto.Profesional
         };
 
         _dbContext.Update(paciente);
