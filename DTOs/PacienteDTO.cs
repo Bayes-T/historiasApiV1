@@ -12,4 +12,7 @@ public class PacienteDTO
     
     public List<Profesional>? Profesionales { get; set; }
     public List<Historia>? Historias { get; set; }
+    
+    //Tabla auxiliar
+    public List<ProfesionalPaciente>? ProfesionalesPacientes { get; set; }
 }

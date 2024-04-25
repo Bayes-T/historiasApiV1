@@ -29,7 +29,7 @@ public class CuentasController: ControllerBase
     [Route("/registrar")]
     public async Task<ActionResult<RespuestaAutenticacion>> Registrar(CredencialesUsuario credencialesUsuario)
     {
-        var usuario = new IdentityUser() { UserName = credencialesUsuario.Name, Email = credencialesUsuario.Email };
+        var usuario = new IdentityUser() { UserName = credencialesUsuario.Name, EmailConfirmed = true, Email = credencialesUsuario.Email };
 
         var resultado = await _userManager.CreateAsync(usuario, credencialesUsuario.Password);
 
@@ -46,21 +46,25 @@ public class CuentasController: ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<RespuestaAutenticacion>> Login(CredencialesUsuario credencialesUsuario)
     {
-        var resultado =
-            await _signInManager.PasswordSignInAsync(credencialesUsuario.Email, credencialesUsuario.Password, isPersistent:false, lockoutOnFailure:false);
+        var usuario = await _userManager.FindByEmailAsync(credencialesUsuario.Email);
+        if (usuario != null)
+        {
+            var resultado = await _signInManager.PasswordSignInAsync(usuario, credencialesUsuario.Password, isPersistent:false, lockoutOnFailure: false);
 
-        if (resultado.Succeeded)
-        {
-            return await ConstruirToken(credencialesUsuario);
+            if (resultado.Succeeded)
+            {
+                return await ConstruirToken(credencialesUsuario);
+            }
+            else
+            {
+                return BadRequest("Login inválido");
+            }
         }
-        else
-        {
-            return BadRequest("Login incorrecto");
-        }
+        return BadRequest("Usuario No encontrado");
     }
     
     
-    [Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "Admin")]
+    [Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "isAdmin")]
     [HttpPost("HacerAdmin")]
     public async Task<ActionResult> hacerAdmin(EditarAdminDTO editarAdminDto)
     {
@@ -71,7 +75,7 @@ public class CuentasController: ControllerBase
     }
     
     [HttpPost("RemoverAdmin")]
-    [Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "Admin")]
+    [Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "isAdmin")]
     public async Task<ActionResult> removerAdmin(EditarAdminDTO editarAdminDto)
     {
         var usuario = await _userManager.FindByEmailAsync(editarAdminDto.Email);

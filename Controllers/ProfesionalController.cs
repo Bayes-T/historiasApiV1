@@ -109,7 +109,13 @@ public class ProfesionalController: ControllerBase
         var resultado = new List<ProfesionalPaciente>();
         foreach (var pacienteId in postProfesional.PacientesId)
         {
-            resultado.Add(new ProfesionalPaciente() {PacienteId = pacienteId, ProfesionalId = profesional.Id});
+            resultado.Add(new ProfesionalPaciente()
+            {
+                PacienteId = pacienteId, 
+                ProfesionalId = profesional.Id,
+                Profesional = profesional,
+                Paciente = await _dbContext.Pacientes.FirstOrDefaultAsync(x => x.Id == pacienteId)
+            });
         }
         
         profesional.ProfesionalesPacientes = resultado;

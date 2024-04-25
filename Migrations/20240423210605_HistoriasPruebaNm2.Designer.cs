@@ -4,6 +4,7 @@ using ApiHistorias;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ApiHistorias.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240423210605_HistoriasPruebaNm2")]
+    partial class HistoriasPruebaNm2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -44,17 +47,11 @@ namespace ApiHistorias.Migrations
                     b.Property<int?>("ProfesionalId")
                         .HasColumnType("int");
 
-                    b.Property<string>("usuarioId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("PacienteId");
 
                     b.HasIndex("ProfesionalId");
-
-                    b.HasIndex("usuarioId");
 
                     b.ToTable("Historias");
                 });
@@ -351,17 +348,9 @@ namespace ApiHistorias.Migrations
                         .WithMany("Historias")
                         .HasForeignKey("ProfesionalId");
 
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Usuario")
-                        .WithMany()
-                        .HasForeignKey("usuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Paciente");
 
                     b.Navigation("Profesional");
-
-                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("ApiHistorias.Entities.ProfesionalPaciente", b =>

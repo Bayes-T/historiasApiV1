@@ -45,12 +45,16 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddControllers().AddNewtonsoftJson();
+
+var connectionString = builder.Configuration.GetConnectionString("defaultConnection");
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(connectionString));
 builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+
 builder.Services.Configure<IdentityOptions>(options =>
 {
     options.User.AllowedUserNameCharacters = null;
 });
-var connectionString = builder.Configuration.GetConnectionString("defaultConnection");
 var JWKey = builder.Configuration["JWTSign"];
 
 
@@ -71,11 +75,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
 builder.Services.AddAuthorization(opciones =>
 {
-    opciones.AddPolicy("isAdmin", policy => policy.RequireClaim("Admin"));
+    opciones.AddPolicy("isAdmin", policy => policy.RequireClaim("isAdmin"));
 });
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
 
 var app = builder.Build();
 
@@ -91,7 +92,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseRouting();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

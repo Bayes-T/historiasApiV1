@@ -6,5 +6,6 @@ public class postPacienteDTO
     public string? Nombre { get; set; }
     public string? DNI { get; set; }
     public string? OSocial { get; set; }
-    public int? profesionalId { get; set; }
+    public List<int>? ProfesionalesId { get; set; }
+    
 }

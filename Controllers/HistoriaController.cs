@@ -141,8 +141,7 @@ public class HistoriaController: ControllerBase
         var usuarioId = usuario.Id;
 
         var existeHistoria = await _dbContext.Historias.AnyAsync(x => x.Id == postHistoriaDto.Id);
-
-            //Eliminar este error al agregar la posibilidad de que un paciente pueda ser atendido por más de un profesional
+        
             if (existeHistoria)
             {
                 return BadRequest("Ya existe una historia con este Id");
@@ -159,7 +158,7 @@ public class HistoriaController: ControllerBase
 
             var profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => x.Id == postHistoriaDto.profesionalId);
             historia.Profesional = profesional;
-            // historia.UsuarioId = usuarioId;
+            historia.usuarioId = usuarioId;
         
             _dbContext.Add(historia);
         

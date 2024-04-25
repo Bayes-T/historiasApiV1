@@ -23,8 +23,8 @@ public class PacienteController : ControllerBase
     [HttpGet("listadoCompleto")]
     public async Task<ActionResult<List<PacienteDTO>>> GetCompleto()
     {
-        var pacientes = await _dbContext.Pacientes.Include(x => x.Profesionales).ToListAsync();
-
+        var pacientes = await _dbContext.Pacientes.Include(x => x.ProfesionalesPacientes).ToListAsync();
+        
         var pacientesDTO = new List<PacienteDTO>() { };
 
         foreach (var paciente in pacientes)
@@ -38,8 +38,10 @@ public class PacienteController : ControllerBase
             };
 
             var historias = await _dbContext.Historias.Where(x => x.Id == paciente.Id).ToListAsync();
-
             pacienteDTO.Historias = historias;
+            
+            var profesionales = await _dbContext.Profesionales.Where(x => x.Id == paciente.Id).ToListAsync();
+            pacienteDTO.Profesionales = profesionales;
 
             pacientesDTO.Add(pacienteDTO);
         }
@@ -171,6 +173,20 @@ public class PacienteController : ControllerBase
             DNI = postPacienteDto.DNI,
             OSocial = postPacienteDto.OSocial,
         };
+        
+        var resultado = new List<ProfesionalPaciente>();
+        foreach (var profesionalId in postPacienteDto.ProfesionalesId)
+        {
+            resultado.Add(new ProfesionalPaciente()
+            {
+                PacienteId = profesionalId, 
+                ProfesionalId = paciente.Id,
+                Profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => x.Id == profesionalId),
+                Paciente = paciente
+            });
+        }
+        
+        paciente.ProfesionalesPacientes = resultado;
         
         _dbContext.Add(paciente);
         await _dbContext.SaveChangesAsync();
