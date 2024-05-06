@@ -10,7 +10,7 @@ namespace ApiHistorias.Controllers;
 
 [ApiController]
 [Route("api/paciente")]
-[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+// [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class PacienteController : ControllerBase
 {
     private readonly ApplicationDbContext _dbContext;
@@ -23,7 +23,7 @@ public class PacienteController : ControllerBase
     [HttpGet("listadoCompleto")]
     public async Task<ActionResult<List<PacienteDTO>>> GetCompleto()
     {
-        var pacientes = await _dbContext.Pacientes.Include(x => x.ProfesionalesPacientes).ToListAsync();
+        var pacientes = await _dbContext.Pacientes.Include(x => x.Historias).Include(x => x.ProfesionalesPacientes).ToListAsync();
         
         var pacientesDTO = new List<PacienteDTO>() { };
 
@@ -40,9 +40,13 @@ public class PacienteController : ControllerBase
             var historias = await _dbContext.Historias.Where(x => x.Id == paciente.Id).ToListAsync();
             pacienteDTO.Historias = historias;
             
-            var profesionales = await _dbContext.Profesionales.Where(x => x.Id == paciente.Id).ToListAsync();
-            pacienteDTO.Profesionales = profesionales;
+            //para relaciones 1:1
+            // var profesionales = await _dbContext.Profesionales.Where(x => x.Id == paciente.Id).ToListAsync();
+            // pacienteDTO.Profesionales = profesionales;
 
+            var profesionalesPacientes = await _dbContext.ProfesionalesPacientes.Where(x => x.PacienteId == paciente.Id).ToListAsync();
+
+            pacienteDTO.ProfesionalesPacientes = profesionalesPacientes;
             pacientesDTO.Add(pacienteDTO);
         }
 
@@ -108,7 +112,7 @@ public class PacienteController : ControllerBase
     [HttpGet("detalleCompleto/{id:int}")]
     public async Task<ActionResult<PacienteDTO>> GetByIdCompleto(int id)
     {
-        var paciente = await _dbContext.Pacientes.Include(x => x.Profesionales).Include(x => x.Historias).FirstOrDefaultAsync(x => x.Id == id);
+        var paciente = await _dbContext.Pacientes.Include(x => x.ProfesionalesPacientes)!.ThenInclude(x => x.Profesional).FirstOrDefaultAsync(x => x.Id == id);
 
         if (paciente == null)
         {
@@ -121,9 +125,8 @@ public class PacienteController : ControllerBase
             Nombre = paciente.Nombre,
             DNI = paciente.DNI,
             OSocial = paciente.OSocial,
-
+            ProfesionalesPacientes = paciente.ProfesionalesPacientes
         };
-        
 
         var historias = await _dbContext.Historias.Where(x => x.Id == id).ToListAsync();
 
@@ -135,8 +138,8 @@ public class PacienteController : ControllerBase
     [HttpGet("detalle/{id:int}")]
     public async Task<ActionResult<PacienteDTO>> GetById(int id)
     {
-
-        var paciente = await _dbContext.Pacientes.Include(x => x.Profesionales).FirstOrDefaultAsync(x => x.Id == id);
+        
+        var paciente = await _dbContext.Pacientes.Include(x => x.ProfesionalesPacientes)!.ThenInclude(x => x.ProfesionalId).FirstOrDefaultAsync(x => x.Id == id);
 
         if (paciente == null)
         {
@@ -149,7 +152,7 @@ public class PacienteController : ControllerBase
             Nombre = paciente.Nombre,
             DNI = paciente.DNI,
             OSocial = paciente.OSocial,
-
+            ProfesionalesPacientes = paciente.ProfesionalesPacientes
         };
 
         return pacienteDTO;
@@ -160,7 +163,7 @@ public class PacienteController : ControllerBase
     {
 
         var existePaciente = await _dbContext.Pacientes.AnyAsync(x => x.Id == postPacienteDto.Id);
-
+        
         //Eliminar este error al agregar la posibilidad de que un paciente pueda ser atendido por más de un profesional
         if (existePaciente)
         {
@@ -174,13 +177,14 @@ public class PacienteController : ControllerBase
             OSocial = postPacienteDto.OSocial,
         };
         
+        //mapeo clase auxiliar
         var resultado = new List<ProfesionalPaciente>();
         foreach (var profesionalId in postPacienteDto.ProfesionalesId)
         {
             resultado.Add(new ProfesionalPaciente()
             {
-                PacienteId = profesionalId, 
-                ProfesionalId = paciente.Id,
+                PacienteId = paciente.Id, 
+                ProfesionalId = profesionalId,
                 Profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => x.Id == profesionalId),
                 Paciente = paciente
             });

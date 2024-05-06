@@ -44,7 +44,7 @@ public class ProfesionalController: ControllerBase
     [HttpGet("listadoCompleto")]
     public async Task<ActionResult<List<ProfesionalDTO>>> getAll()
     {
-        var profesionales = await _dbContext.Profesionales.Include(x => x.Pacientes).Include(x => x.Historias).ToListAsync();
+        var profesionales = await _dbContext.Profesionales.Include(x => x.Historias).Include(x => x.ProfesionalesPacientes).ToListAsync();
         
         var profesionalesDTO = new List<ProfesionalDTO>();
 
@@ -58,12 +58,16 @@ public class ProfesionalController: ControllerBase
                 Permisos = profesional.Permisos
             };
 
-            var pacientes = await _dbContext.Pacientes.Where(x => x.Id == profesional.Id).ToListAsync();
-
-            profesional.Pacientes = pacientes;
+            //para relaciones 1:1
+            // var pacientes = await _dbContext.Pacientes.Where(x => x.Id == profesional.Id).ToListAsync();
+            // profesionalDTO.Pacientes = pacientes;
 
             var historias = await _dbContext.Historias.Where(x => x.Id == profesional.Id).ToListAsync();
-;            profesional.Historias = historias;
+;            profesionalDTO.Historias = historias;
+
+            var profesionalesPacientes = await _dbContext.ProfesionalesPacientes.Where(x => x.ProfesionalId == profesional.Id).ToListAsync();
+
+            profesionalDTO.ProfesionalesPacientes = profesionalesPacientes;
             
             profesionalesDTO.Add(profesionalDTO);
         }
@@ -75,14 +79,15 @@ public class ProfesionalController: ControllerBase
     [HttpGet("perfil/{id:int}")]
     public async Task<ActionResult<ProfesionalDTO>> getById(int id)
     {
-        var profesional = await _dbContext.Profesionales.FirstOrDefaultAsync(x => x.Id == id);
+        var profesional = await _dbContext.Profesionales.Include(x => x.ProfesionalesPacientes).ThenInclude(x => x.PacienteId).FirstOrDefaultAsync(x => x.Id == id);
 
         var profesionalDTO = new ProfesionalDTO()
         {
             Id = profesional.Id,
             Nombre = profesional.Nombre,
             Cargo = profesional.Cargo,
-            Permisos = profesional.Permisos
+            Permisos = profesional.Permisos,
+            ProfesionalesPacientes = profesional.ProfesionalesPacientes
         };
 
         return profesionalDTO;
@@ -92,7 +97,7 @@ public class ProfesionalController: ControllerBase
     public async Task<ActionResult> post(postProfesionalDTO postProfesional)
     {
         var existeProfesional = await _dbContext.Profesionales.AnyAsync(x => x.Id == postProfesional.Id);
-
+        
         if (existeProfesional)
         {
             return BadRequest("Ya existe un profesional con este Id");
@@ -100,7 +105,6 @@ public class ProfesionalController: ControllerBase
         
         var profesional = new Profesional()
         {
-            Id = postProfesional.Id,
             Nombre = postProfesional.Nombre,
             Cargo = postProfesional.Cargo,
             Permisos = postProfesional.Permisos
@@ -113,8 +117,8 @@ public class ProfesionalController: ControllerBase
             {
                 PacienteId = pacienteId, 
                 ProfesionalId = profesional.Id,
-                Profesional = profesional,
-                Paciente = await _dbContext.Pacientes.FirstOrDefaultAsync(x => x.Id == pacienteId)
+                Paciente = await _dbContext.Pacientes.FirstOrDefaultAsync(x => x.Id == pacienteId),
+                Profesional = profesional
             });
         }
         
@@ -122,7 +126,7 @@ public class ProfesionalController: ControllerBase
         
         _dbContext.Add(profesional);
         await _dbContext.SaveChangesAsync();
-        return Ok(resultado);
+        return Ok(profesional);
     }
     
     [HttpPatch("{id}")]
@@ -164,7 +168,6 @@ public class ProfesionalController: ControllerBase
 
         var profesional = new Profesional()
         {
-            Id = historiaDto.Id,
             Nombre = historiaDto.Nombre,
             Cargo = historiaDto.Cargo,
             Permisos = historiaDto.Permisos,

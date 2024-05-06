@@ -6,6 +6,6 @@ public class ProfesionalPaciente
     public int PacienteId { get; set; }
     
     //nav props
-    public Profesional? Profesional { get; set; }
-    public Paciente? Paciente { get; set; }
+    public Profesional Profesional { get; set; }
+    public Paciente Paciente { get; set; }
 }

@@ -15,4 +15,5 @@ public class PacienteDTO
     
     //Tabla auxiliar
     public List<ProfesionalPaciente>? ProfesionalesPacientes { get; set; }
+    public List<ProfesionalDTO>? ProfesionalesDTO { get; set; }
 }

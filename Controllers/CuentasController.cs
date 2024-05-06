@@ -90,6 +90,7 @@ public class CuentasController: ControllerBase
     {
         var emailClaim = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "email");
         var email = emailClaim.Value;
+
         var credencialesUsuario = new CredencialesUsuario()
         {
             Email = email
@@ -123,4 +124,46 @@ public class CuentasController: ControllerBase
         };
     }
     
+    [HttpPost("cambiarPassword")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<ActionResult> CambiarPassword(string currentPassword, string newPassword)
+    {
+        var emailClaim = HttpContext.User.Claims.FirstOrDefault(x => x.Type == "email");
+        var email = emailClaim.Value;
+        var user = await _userManager.FindByEmailAsync(email);
+        
+        var resultado = await _signInManager.PasswordSignInAsync(user, currentPassword, isPersistent:false, lockoutOnFailure: false);
+
+        if (resultado.Succeeded)
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+            return NoContent();
+        }
+
+        return BadRequest();
+    }
+    
+    //Por ahora sólo los administradores pueden cambiar la contraseña, mirar este ejemplo para los casos que quiera implementar un IEmailSender
+    //https://stackoverflow.com/questions/65070487/how-to-configure-email-sending-in-asp-net-core-for-identity-library
+    
+    [Authorize (AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = "isAdmin")]
+    [HttpPost("forgotPassword")]
+    public async Task<ActionResult> forgotPassword(string email, string newPassword)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+        
+        if (user == null)
+        {
+            return BadRequest();
+        }
+        
+        string token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        
+        await _userManager.ResetPasswordAsync(user, token, newPassword);
+        
+        return NoContent();
+    }
 }

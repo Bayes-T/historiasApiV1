@@ -45,7 +45,6 @@ namespace ApiHistorias.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("usuarioId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -325,22 +324,7 @@ namespace ApiHistorias.Migrations
 
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
-
-            modelBuilder.Entity("PacienteProfesional", b =>
-                {
-                    b.Property<int>("PacientesId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProfesionalesId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PacientesId", "ProfesionalesId");
-
-                    b.HasIndex("ProfesionalesId");
-
-                    b.ToTable("PacienteProfesional");
-                });
-
+            
             modelBuilder.Entity("ApiHistorias.Entities.Historia", b =>
                 {
                     b.HasOne("ApiHistorias.Entities.Paciente", "Paciente")
@@ -353,9 +337,7 @@ namespace ApiHistorias.Migrations
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "Usuario")
                         .WithMany()
-                        .HasForeignKey("usuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("usuarioId");
 
                     b.Navigation("Paciente");
 
@@ -369,13 +351,13 @@ namespace ApiHistorias.Migrations
                     b.HasOne("ApiHistorias.Entities.Paciente", "Paciente")
                         .WithMany("ProfesionalesPacientes")
                         .HasForeignKey("PacienteId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ApiHistorias.Entities.Profesional", "Profesional")
                         .WithMany("ProfesionalesPacientes")
                         .HasForeignKey("ProfesionalId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Paciente");
@@ -388,7 +370,7 @@ namespace ApiHistorias.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
 
@@ -397,7 +379,7 @@ namespace ApiHistorias.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
 
@@ -406,7 +388,7 @@ namespace ApiHistorias.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
 
@@ -415,13 +397,13 @@ namespace ApiHistorias.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
 
@@ -430,22 +412,7 @@ namespace ApiHistorias.Migrations
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("PacienteProfesional", b =>
-                {
-                    b.HasOne("ApiHistorias.Entities.Paciente", null)
-                        .WithMany()
-                        .HasForeignKey("PacientesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ApiHistorias.Entities.Profesional", null)
-                        .WithMany()
-                        .HasForeignKey("ProfesionalesId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
                 });
 

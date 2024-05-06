@@ -322,21 +322,7 @@ namespace ApiHistorias.Migrations
 
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
-
-            modelBuilder.Entity("PacienteProfesional", b =>
-                {
-                    b.Property<int>("PacientesId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProfesionalesId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PacientesId", "ProfesionalesId");
-
-                    b.HasIndex("ProfesionalesId");
-
-                    b.ToTable("PacienteProfesional");
-                });
+            
 
             modelBuilder.Entity("ApiHistorias.Entities.Historia", b =>
                 {
@@ -422,22 +408,7 @@ namespace ApiHistorias.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
-
-            modelBuilder.Entity("PacienteProfesional", b =>
-                {
-                    b.HasOne("ApiHistorias.Entities.Paciente", null)
-                        .WithMany()
-                        .HasForeignKey("PacientesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ApiHistorias.Entities.Profesional", null)
-                        .WithMany()
-                        .HasForeignKey("ProfesionalesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
+            
             modelBuilder.Entity("ApiHistorias.Entities.Paciente", b =>
                 {
                     b.Navigation("Historias");
